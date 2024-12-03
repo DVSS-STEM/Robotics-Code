@@ -190,5 +190,17 @@ public class DriveCode extends LinearOpMode {
            
         }
     }
+    public void runToTicks(DcMotor motor, int ticks, double power) {
+        vertical_1.setTargetPosition(ticks);
+        vertical_2.setTargetPosition(ticks);
+        vertical_1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        vertical_2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        vertical_1.setPower(power);
+        vertical_2.setPower(power);
+    }
+    public void resetTicks(DcMotor motor) {
+        motor.setMode(DcMotor.STOP_AND_RESET_ENCODER);
+    }
+    public 
     
 }
