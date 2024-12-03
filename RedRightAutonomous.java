@@ -103,7 +103,7 @@ public class RedRightAutonomous extends LinearOpMode {
     double facing = 0;
 
     // Set target position. NEEDS TO BE CALIBRATED
-    double ticksPerInch = 45.0; 
+    double ticksPerInch = 44.555; 
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
