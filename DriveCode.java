@@ -29,6 +29,8 @@ public class DriveCode extends LinearOpMode {
     double rot_pos = 0.5;
     int vpos = 0;
     int hpos = 0;
+    CRServo sub_peck;
+    Servo specimen_claw, sample_claw, sub_rotation;
     @Override
     public void runOpMode(){
 
@@ -41,10 +43,10 @@ public class DriveCode extends LinearOpMode {
         DcMotor horizontal = hardwareMap.dcMotor.get("Horizontal");
         DcMotor armMotor = hardwareMap.dcMotor.get("armMotor");
         
-        CRServo sub_peck = hardwareMap.crservo.get("peck");
-        Servo specimen_claw = hardwareMap.servo.get("specimen claw");
-        Servo sample_claw = hardwareMap.servo.get("sample claw");
-        Servo sub_rotation = hardwareMap.servo.get("rotation");
+        sub_peck = hardwareMap.crservo.get("peck");
+        specimen_claw = hardwareMap.servo.get("specimen claw");
+        sample_claw = hardwareMap.servo.get("sample claw");
+        sub_rotation = hardwareMap.servo.get("rotation");
 
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
