@@ -29,17 +29,20 @@ public class DriveCode extends LinearOpMode {
     double rot_pos = 0.5;
     int vpos = 0;
     int hpos = 0;
+
+    DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor, vertical_1, vertical_2, horizontal, armMotor;
+
     @Override
     public void runOpMode(){
 
-        DcMotor frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
-        DcMotor backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
-        DcMotor frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
-        DcMotor backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
-        DcMotor vertical_1 = hardwareMap.dcMotor.get("Vertical 1");
-        DcMotor vertical_2 = hardwareMap.dcMotor.get("Vertical 2");
-        DcMotor horizontal = hardwareMap.dcMotor.get("Horizontal");
-        DcMotor armMotor = hardwareMap.dcMotor.get("armMotor");
+        frontLeftMotor = hardwareMap.dcMotor.get("frontLeftMotor");
+        backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
+        frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
+        backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
+        vertical_1 = hardwareMap.dcMotor.get("Vertical 1");
+        vertical_2 = hardwareMap.dcMotor.get("Vertical 2");
+        horizontal = hardwareMap.dcMotor.get("Horizontal");
+        armMotor = hardwareMap.dcMotor.get("armMotor");
         
         CRServo sub_peck = hardwareMap.crservo.get("peck");
         Servo specimen_claw = hardwareMap.servo.get("specimen claw");
