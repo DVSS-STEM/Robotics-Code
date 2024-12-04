@@ -1,0 +1,35 @@
+2 person controls
+
+person 1 (Zeyad):
+    - joysticks => mecanum wheel drive controls
+        - left joystick movement => translation (forward, backward, left, right, diagonals)
+        - right joystick movement=> rotation
+        - left joystick press => rotate robot 90° counter clockwise
+        - right joystick press => rotate robot 90° clockwise
+    - dpad => mecanum wheel fine movement (~10cm in specified direction)
+        - up => forward 
+        - down => backward
+        - right => right
+        - left => left
+    - button controls => claw controls
+        *** x & y buttons switched when coding ***
+        - a => close claw
+        - b => open claw
+        - x => rotate claw counter clockwise (coarse [~0.05 change in position ])
+        - y => rotate claw clockwise (coarse [~0.05 change in position ])
+    - bumpers => arm rotation controls
+        - left bumper => arm rotation towards the back of the robot
+        - right bumper => arm rotation towards the front of the robot
+    - triggers => (N/A)
+
+person 2 (Thomas):
+    - joysticks => (N/A)
+    - dpad =>
+    - button controls => claw fine adjustment controls
+        *** x & y buttons switched when coding ***
+        - a => "tighten" claw (i.e fine control over claw closing [~0.025 change in position ])
+        - b => "loosen" claw (i.e fine control over claw opening [~0.025 change in position ])
+        - x => rotate claw counter clockwise (fine [~0.025 change in position ])
+        - y => rotate claw clockwise (fine [~0.025 change in position ])
+    - bumpers =>
+    - triggers =>
