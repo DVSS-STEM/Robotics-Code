@@ -6,10 +6,12 @@ import java.util.Map;
 
 public class MotorManager {
     public MotorManager(MotorTPR[] tprList) {
-        Map<MotorConfigurationType, Integer> motorMap = new HashMap<>();
+        //Actually use MotorConfigurationType correctly, in time.
+        Map<String, Integer> ticksMap = new HashMap<>();
         for (MotorTPR entry : tprList) {
             motorMap.put(entry.getType(), entry.getTPR());
         }
+        this.ticksMap = ticksMap;
     }
     private ArrayList<DcMotor> poweredMotors = new ArrayList<>();
 
@@ -27,7 +29,8 @@ public class MotorManager {
         }
     }
     public void runMs(DcMotor motor, double ms, double power) {
-        
+        String type = motor.getMotorType().getName();
+        motorMap.get(type);
         
     }
     public void resetTicks(DcMotor motor) {
