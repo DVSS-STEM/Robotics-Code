@@ -73,7 +73,7 @@ public class DriveCode extends LinearOpMode {
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         manager = new MotorManager([
-            MotorTPR("StudicaMotor", 356),
+            MotorTPR("StudicaMotor", 366),
             MotorTPR("HexMotor", 560),
             MotorTPR("CoreHexMotor", 288)
         ]);
