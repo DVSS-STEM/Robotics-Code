@@ -2,17 +2,33 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MotorManager {
+    public MotorManager(MotorTPR[] tprList) {
+        Map<MotorConfigurationType, Integer> motorMap = new HashMap<>();
+        for (MotorTPR entry : tprList) {
+            motorMap.put(entry.getType(), entry.getTPR());
+        }
+    }
     private ArrayList<DcMotor> poweredMotors = new ArrayList<>();
 
-    public void run(DcMotor motor, int ticks, double power) {
+    //ticks are how much it runs after a single press, basically
+    //a lower threshold value for movement.
+    public void switchOn(DcMotor motor) {
+        poweredMotors.add(motor);
+    }
+    public void runTicks(DcMotor motor, int ticks, double power) {
         if (!motor.isBusy()) {
-            poweredMotors.add(motor);
-            vertical_1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            switchOn(motor);
+            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motor.setTargetPosition(ticks);
-            vertical_1.setPower(power);
+            motor.setPower(power);
         }
+    }
+    public void runMs(DcMotor motor, double ms, double power) {
+        
+        
     }
     public void resetTicks(DcMotor motor) {
         motor.setMode(DcMotor.STOP_AND_RESET_ENCODER);
@@ -36,3 +52,10 @@ public class MotorManager {
         return new ArrayList<>(poweredMotors);
     }
 }
+
+//useful links
+/*
+ * https://javadoc.io/doc/org.firstinspires.ftc
+ * DCMOTOR DOCUMENTATION (has MotorConfigurationType)
+ * https://javadoc.io/doc/org.firstinspires.ftc/RobotCore/latest/com/qualcomm/robotcore/hardware/configuration/typecontainers/MotorConfigurationType.html
+ */

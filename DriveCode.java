@@ -33,7 +33,7 @@ public class DriveCode extends LinearOpMode {
 
     DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor, vertical_1, vertical_2, horizontal, armMotor;
 
-    MotorManager manager = new MotorManager();
+    MotorManager manager;
 
     @Override
     public void runOpMode(){
@@ -72,7 +72,11 @@ public class DriveCode extends LinearOpMode {
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        manager = new MotorManager([
+            MotorTPR(StudicaMotor)
+            MotorTPR(HexMotor, 560),
+            MotorTPR()
+        ]);
        waitForStart();
 
         while (opModeIsActive()) {
