@@ -21,7 +21,6 @@ import com.qualcomm.robotcore.util.Range;
 import java.util.*;
 import java.lang.Math;
 
-
 @TeleOp
 public class DriveCode extends LinearOpMode {
     boolean claw1 = false;
@@ -33,6 +32,8 @@ public class DriveCode extends LinearOpMode {
     Servo specimen_claw, sample_claw, sub_rotation;
 
     DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor, vertical_1, vertical_2, horizontal, armMotor;
+
+    MotorManager manager = new MotorManager();
 
     @Override
     public void runOpMode(){
@@ -67,13 +68,21 @@ public class DriveCode extends LinearOpMode {
         horizontal.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //sub_peck.setZeroPowerBehavior(CrServo.ZeroPowerBehavior.BRAKE);
-
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
        waitForStart();
 
         while (opModeIsActive()) {
-            
-            
+            manager.stopCompleted();
+            telemetry.addData("----ACTIVE MOTORS----");
+            for (DcMotor motor : manager.getPoweredMotors()) {
+                telemetry.addData("Motor Name", motor.getDeviceName());
+                telemetry.addData("Ticks remaining", motor.getTargetPosition() - motor.getCurrentPosition());
+                telemetry.addData(",");
+            }
             double y = gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = -gamepad1.right_stick_x;
@@ -91,35 +100,21 @@ public class DriveCode extends LinearOpMode {
             
 
             if (gamepad1.dpad_right){
-                horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                horizontal.setPower(1);
-                sleep(25);
-                horizontal.setPower(0);
+                manager.run(horizontal, 12, 1);
             } else if (gamepad1.dpad_left){
-                horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                horizontal.setPower(-1);
-                sleep(25);
-                horizontal.setPower(0);
+                manager.run(horizontal, -12, 1);
             }
             
             if (gamepad1.right_bumper){
-                armMotor.setPower(0.5);
-                sleep(25);
-                armMotor.setPower(0);
+                manager.run(armMotor, 6, 1);
             } else if (gamepad1.left_bumper){
-                armMotor.setPower(-0.5);
-                sleep(25);
-                armMotor.setPower(0);
+                manager.run(armMotor, -6, 1);
             }
             
             if (gamepad1.right_trigger>0.3){
-                sub_peck.setPower(1);
-                sleep(25);
-                sub_peck.setPower(0);
+                manager.run(sub_peck, 12, 1);
             } else if (gamepad1.left_trigger>0.3){
-                sub_peck.setPower(-1);
-                sleep(25);
-                sub_peck.setPower(0);
+                manager.run(sub_peck, -12, 1);
             }
             
             if (gamepad1.a){
@@ -133,54 +128,13 @@ public class DriveCode extends LinearOpMode {
             } else if (gamepad1.y){
                 sample_claw.setPosition(0.4);
             }
-            /*
-            if (gamepad1.a){
-                if (claw1){
-                   specimen_claw.setPosition(0.1); 
-                   claw1 = false;
-                } else if (!claw1){
-                    specimen_claw.setPosition(0.5);
-                    claw1 = true;
-                }
-            }
-            
-            if (gamepad1.b){
-                if (claw2){
-                   sample_claw.setPosition(0.1); 
-                   claw2 = false;
-                } else if (!claw2){
-                    sample_claw.setPosition(0.5);
-                    claw2 = true;
-                }
-            }
-            /*
-            if (gamepad1.x){
-                rot_pos +=0.05;
-                //sub_rotation.setPosition(0.4);
-                telemetry.addData("Y:","1");
-            } else if (gamepad1.y){
-                rot_pos -=0.05;
-                //sub_rotation.setPosition(0.6);
-                telemetry.addData("X:","1");
-            }
-            */
             
             telemetry.update();
             
            
         }
     }
-    public void runToTicks(DcMotor motor, int ticks, double power) {
-        vertical_1.setTargetPosition(ticks);
-        vertical_2.setTargetPosition(ticks);
-        vertical_1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        vertical_2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        vertical_1.setPower(power);
-        vertical_2.setPower(power);
-    }
-    public void resetTicks(DcMotor motor) {
-        motor.setMode(DcMotor.STOP_AND_RESET_ENCODER);
-    }
-    public 
+    
+
     
 }
