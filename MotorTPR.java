@@ -4,14 +4,18 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import java.util.ArrayList;
 
 public class MotorTPR {
-    public MotorTPR(String type, int tpr) {
+    public MotorTPR(String type, int tpr, int rpm) {
         this.type = type;
         this.tpr = tpr;
+        this.rpm = rpm;
     }
     public String getType() {
-        return this.type;
+        return type;
     }
     public int getTPR() {
-        return this.tpr;
+        return tpr;
+    }
+    public int getRPM() {
+        return rpm;
     }
 }
