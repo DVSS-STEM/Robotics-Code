@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import java.util.ArrayList;
-
+/*
 public class MotorTPR {
     public MotorTPR(String type, int tpr, int rpm) {
         this.type = type;
@@ -19,3 +19,4 @@ public class MotorTPR {
         return rpm;
     }
 }
+*/
