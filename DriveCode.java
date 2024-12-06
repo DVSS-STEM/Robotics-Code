@@ -102,7 +102,9 @@ public class DriveCode extends LinearOpMode {
             frontRightMotor.setPower(frontRightPower);
             backRightMotor.setPower(backRightPower);
             
-
+            flmtype = frontLeftMotor.getMotorType();
+            telemetry.addData("FLMTYPENAME", flmtype.name)
+            telemetry.addData("FLMTYPETPM", flmtype.getTicksPerRev())
             if (gamepad1.dpad_right){
                 manager.run(horizontal, 12, 1);
             } else if (gamepad1.dpad_left){
