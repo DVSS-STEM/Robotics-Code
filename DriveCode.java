@@ -60,6 +60,7 @@ public class DriveCode extends LinearOpMode {
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         MotorManager manager = new MotorManager();
         waitForStart();
 
@@ -91,7 +92,16 @@ public class DriveCode extends LinearOpMode {
             telemetry.addData("FLMTYPETPM", flmtype.getTicksPerRev());
             
             if (gamepad1.right_bumper){
-                manager.runTicks(armMotor, 6, 1);
+                //manager.runTicks(armMotor, 6, 1);
+                telemetry.addData("Ouch", "Owie");
+                if (!armMotor.isBusy()) {
+                    armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    armMotor.setTargetPosition(100);
+                    armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    armMotor.setPower(1);
+                }
+                armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                armMotor.setPower(1);
             } else if (gamepad1.left_bumper){
                 manager.runTicks(armMotor, -6, 1);
             }
