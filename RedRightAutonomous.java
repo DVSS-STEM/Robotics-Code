@@ -132,10 +132,12 @@ public class RedRightAutonomous extends LinearOpMode {
      * to +/-90 degrees if it's vertical, or 180 degrees if it's upside-down.
      */
     //FILL THIS v----------------------------------------------------------------------------------------
+
+    //LAST VAR IS ACQUISITION TIME, WHICH IS TIME THAT IT WAS SET. KEEP AT 0
     private Position cameraPosition = new Position(DistanceUnit.CM,
-            13, 1.25, 44.5, 0);
+            -7, -16, 19, 0);
     private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
-            -90, -90, -90, 0);
+            -90, -90, 0, 0);
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
 
