@@ -25,7 +25,6 @@ public class ZT_Mecanum extends LinearOpMode {
         //misc.
     private ElapsedTime runtime = new ElapsedTime();
     boolean initial = true;
-    final int TPR_S = 356; //TPR = ticks per revolution, S = studica
     final int TPR_R = 560; //TPR = ticks per revolution, R = REV
     final int TPR_H = 288; //TPR = ticks per revolution, H = Hex motor
     final double Arm_rot_deg = 145;
