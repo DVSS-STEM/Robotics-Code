@@ -34,11 +34,79 @@ import java.util.List;
 
 @Autonomous
 public class AprilTagAutonomous extends LinearOpMode {
+    //Hardware component declarations
+        //Drivetrain motors
+    private DcMotor frontLeftMotor;
+    private DcMotor backLeftMotor;
+    private DcMotor frontRightMotor;
+    private DcMotor backRightMotor;
+        //Arm motors
+    private DcMotor SpecArmMotor;
+    private DcMotor SubArmMotor;
+        //Claw servos
+    private Servo specClaw;
+    private Servo subClaw;
+    private Servo subRotation;
+
+    //Constants
+        //Drivetrain Encoder Constants
+    private static final double DRIVETRAIN_COUNTS_PER_MOTOR_REV = 28; //REV Core Hex Motor
+    private static final double DRIVETRAIN_GEAR_REDUCTION = 20.0;  // If using geared motors
+    private static final double WHEEL_DIAMETER_INCHES = 4.0;  // Typical mecanum wheel size
+    private static final double DRIVETRAIN_COUNTS_PER_INCH = (DRIVETRAIN_COUNTS_PER_MOTOR_REV * DRIVETRAIN_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
+        // Arm Motor Encoder Constants
+    private static final double ARM_COUNTS_PER_MOTOR_REV = 288;
+    private static final double ARM_GEAR_REDUCTION = 4.0;
+    private static final double ARM_COUNTS_PER_DEGREE = (ARM_COUNTS_PER_MOTOR_REV * ARM_GEAR_REDUCTION) / 360.0;
+        // Arm Position Boundaries
+    private static final int ARM_MIN_POSITION = 0;  // Lowest position in encoder ticks
+    private static final int ARM_MAX_POSITION = (int)(ARM_COUNTS_PER_DEGREE * 250);  // Maximum rotation (e.g., 205 degrees)
+    private static final int ARM_SOFT_LIMIT_BUFFER = (int)(ARM_COUNTS_PER_DEGREE * 26);  // 15-degree soft buffer
+        //Servo Position Constants
+            //Specimen Claw
+    private static final double SPEC_OPEN_POSITION = 0.6;
+    private static final double SPEC_CLOSED_POSITION = .9;
+            //Sub Claw
+    private static final double SUB_OPEN_POSITION = 0;
+    private static final double SUB_S_CLOSED_POSITION = 1; //full close (grab from short side -> 1.5"), clear for rotation
+    private static final double SUB_L_CLOSED_POSITION = 0.86; // 'half' close (grab from long side -> 3.5"), clear for rotation
+    private static final double SUB_CLEARED_POSITION = 0.7; //open, but cleared for rotation
+            //Sub Claw Rotation
+    private static final double ROTATE_R = 1;
+    private static final double ROTATE_L = 0.3;
+    private static final double ROTATE_REST = 0.63;
+    private static final double ROTATE_INCREMENTS = 0.05;
+
+    //Other Program Variables
+        //Button State Tracking
+    private static boolean LAST_R_1 = false;
+    private static boolean LAST_L_1 = false;
+    private static boolean LAST_A_2 = false;
+    private static boolean LAST_X_2 = false;
+        //Drivetrain Controls
+    private static double y = 0; //Driver left joystick y
+    private static double x = 0; //Driver left joystick x
+    private static double r = 0; //Driver right joystick x
+    private static double r2 = 0; //Operator right joystick x
+    private static boolean U2 = false; //Operator d-pad fine movement forward
+    private static boolean D2 = false; //Operator d-pad fine movement backward
+    private static boolean R2 = false; //Operator d-pad fine movement right
+    private static boolean L2 = false; //Operator d-pad fine movement left
+        //Motor Power Variables
+    private static double frontLeftPower = 0;
+    private static double backLeftPower = 0;
+    private static double frontRightPower = 0;
+    private static double backRightPower = 0;
+    private static double SpecArmPower = 0;
+    private static double SubArmPower = 0;
+        //Arm Active Positions
+    private static int SpecArmPosition = 0;
+    private static int SubArmPosition = 0;
+    private static int adjustor = 0; //incremental variable to adjust the ticks for the spec arm wall preset
+        //Sub Claw Rotation
+    private static double ROTATE_POS = ROTATE_REST; 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
-    //Starting x position
-    private static double xPos = 0;
-    private static double yPos = 0;
-    private static double zPos = 0;
+    
     /**
      * Variables to store the position and orientation of the camera on the robot. Setting these
      * values requires a definition of the axes of the camera and robot:
@@ -78,10 +146,16 @@ public class AprilTagAutonomous extends LinearOpMode {
      */
     private VisionPortal visionPortal;
     
+    //----------------------------------------------------------------------------//
+    
+    //Starting position
+    double[][] currentGoalPos = new double[3][2];
+    //current goal position
+    
     public void runOpMode() {
 
         initAprilTag();
-
+        initializeHardware();
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch START to start OpMode");
@@ -90,13 +164,10 @@ public class AprilTagAutonomous extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            double[] toSpread = telemetryAprilTag();
-            xPos = toSpread[0];
-            yPos = toSpread[1];
-            zPos = toSpread[2];
-            telemetry.addData("xCheck", xPos);
-            telemetry.addData("yCheck", yPos);
-            telemetry.addData("zCheck", zPos);
+            currentGoalPos = telemetryAprilTag(currentGoalPos);
+            moveToGoal();
+            
+            
             // Push telemetry to the Driver Station.
             telemetry.update();
 
@@ -188,13 +259,10 @@ public class AprilTagAutonomous extends LinearOpMode {
     /**
      * Add telemetry about AprilTag detections.
      */
-    private double[] telemetryAprilTag() {
-
+    private double[][] telemetryAprilTag(double[][] cope) {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
-        double xPos = 0;
-        double yPos = 0;
-        double zPos = 0;
+        double[][] retArr = new double[3][2];
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
@@ -207,9 +275,12 @@ public class AprilTagAutonomous extends LinearOpMode {
                         detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
                         detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
                         detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
-                xPos = detection.robotPose.getPosition().x;
-                yPos = detection.robotPose.getPosition().y;
-                zPos = detection.robotPose.getPosition().z;
+                retArr[0][0] = detection.robotPose.getPosition().x;
+                retArr[1][0] = detection.robotPose.getPosition().y;
+                retArr[2][0] = detection.robotPose.getPosition().z;
+                retArr[0][1] = cope[0][1];
+                retArr[1][1] = cope[1][1];
+                retArr[2][1] = cope[2][1];
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
@@ -219,8 +290,87 @@ public class AprilTagAutonomous extends LinearOpMode {
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-        return new double[]{xPos, yPos, zPos};
+        return retArr;
     }   // end method telemetryAprilTag()
+    
+    //are any drive motors busy
+    private boolean anyBusy() {
+        if (
+            frontLeftMotor.isBusy() ||
+            frontRightMotor.isBusy() ||
+            backLeftMotor.isBusy() ||
+            backRightMotor.isBusy()
+            ) {
+                return true;
+            }
+        return false;
+    }
+    //Move inexorably towards goal by increments
+    private void moveToGoal() {
+        if (!anyBusy()) {
+            for (double[] i : currentGoalPos) {
+                telemetry.addData("Curent", i[0]);
+                telemetry.addData("Goal", i[1]);
+                if (largeDiff(i[0], i[1]) != 0) {
+                    setMotorRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    frontLeftMotor.setTargetPosition(5);
+                    break;
+                }
+            }
+        }
+    }
+    private 
+    private double largeDiff(double n1, double n2) {
+        if (Math.abs(Math.abs(n1) - Math.abs(n2)) > 1) {
+            double diff = n1 - n2;
+            return diff / Math.abs(diff);
+        }
+        return 0;
+    }
+    public void initializeHardware() {
+        //Motor Initialization
+        frontLeftMotor = hardwareMap.dcMotor.get("backRightMotor");
+        backLeftMotor = hardwareMap.dcMotor.get("frontRightMotor");
+        frontRightMotor = hardwareMap.dcMotor.get("backLeftMotor");
+        backRightMotor = hardwareMap.dcMotor.get("frontLeftMotor");
+        SpecArmMotor = hardwareMap.dcMotor.get("armMotor");
+        SubArmMotor = hardwareMap.dcMotor.get("armMotor2");
 
+        //Servo Initialization
+        specClaw = hardwareMap.servo.get("specimen claw");
+        subClaw = hardwareMap.servo.get("sample claw");
+        subRotation = hardwareMap.servo.get("sub rotation");
+
+        //Set Motor Directions
+        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        SpecArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        //Set Motor Modes
+        setMotorRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMotorRunModes(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //Set Zero Power to Brake
+        frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        SpecArmMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        SubArmMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //Ensure Servos are in Initial Position
+        specClaw.setPosition(SPEC_OPEN_POSITION);
+        subClaw.setPosition(1);
+        subRotation.setPosition(ROTATE_REST);
+    }
+
+    private void setMotorRunModes(DcMotor.RunMode runMode){
+        frontLeftMotor.setMode(runMode);
+        backLeftMotor.setMode(runMode);
+        frontRightMotor.setMode(runMode);
+        backRightMotor.setMode(runMode);
+        SpecArmMotor.setMode(runMode);
+        SubArmMotor.setMode(runMode);
+    }
     // todo: write your code here
 }
