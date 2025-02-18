@@ -161,7 +161,8 @@ public class AprilTagAutonomous extends LinearOpMode {
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
-
+        
+        currentGoalPos = returnTarget(new double[]{21, -35, 0}, currentGoalPos);
         while (opModeIsActive()) {
 
             currentGoalPos = telemetryAprilTag(currentGoalPos);
@@ -308,18 +309,30 @@ public class AprilTagAutonomous extends LinearOpMode {
     //Move inexorably towards goal by increments
     private void moveToGoal() {
         if (!anyBusy()) {
+            setDriveRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            int counter = 0;
             for (double[] i : currentGoalPos) {
+                counter++;
                 telemetry.addData("Curent", i[0]);
                 telemetry.addData("Goal", i[1]);
                 if (largeDiff(i[0], i[1]) != 0) {
-                    setMotorRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    frontLeftMotor.setTargetPosition(5);
+                    setDriveTicks((int)(largeDiff(i[0], i[1]) * 100));
+                    setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
+                    setDrivePower(1);
                     break;
                 }
             }
         }
     }
-    private 
+    private double[][] returnTarget(double[] targs, double[][] positions) {
+        double[][] retArr = new double[3][2];
+        int counter = 0;
+        for (double[] i : positions) {
+            retArr[counter] = new double[]{i[0], targs[counter]};
+            counter++;
+        }
+        return retArr;
+    }
     private double largeDiff(double n1, double n2) {
         if (Math.abs(Math.abs(n1) - Math.abs(n2)) > 1) {
             double diff = n1 - n2;
@@ -363,7 +376,24 @@ public class AprilTagAutonomous extends LinearOpMode {
         subClaw.setPosition(1);
         subRotation.setPosition(ROTATE_REST);
     }
-
+    private void setDriveTicks(int ticks){
+        frontLeftMotor.setTargetPosition(ticks);
+        backLeftMotor.setTargetPosition(ticks);
+        frontRightMotor.setTargetPosition(ticks);
+        backRightMotor.setTargetPosition(ticks);
+    }
+    private void setDrivePower(double power){
+        frontLeftMotor.setPower(power);
+        backLeftMotor.setPower(power);
+        frontRightMotor.setPower(power);
+        backRightMotor.setPower(power);
+    }
+    private void setDriveRunModes(DcMotor.RunMode runMode){
+        frontLeftMotor.setMode(runMode);
+        backLeftMotor.setMode(runMode);
+        frontRightMotor.setMode(runMode);
+        backRightMotor.setMode(runMode);
+    }
     private void setMotorRunModes(DcMotor.RunMode runMode){
         frontLeftMotor.setMode(runMode);
         backLeftMotor.setMode(runMode);
