@@ -162,13 +162,11 @@ public class AprilTagAutonomous extends LinearOpMode {
         telemetry.update();
         waitForStart();
         
-        currentGoalPos = returnTarget(new double[]{21, -35, 0}, currentGoalPos);
+        currentGoalPos = changeTarget( currentGoalPos, 21, -35, 0);
         while (opModeIsActive()) {
-
             currentGoalPos = telemetryAprilTag(currentGoalPos);
             moveToGoal();
-            
-            
+
             // Push telemetry to the Driver Station.
             telemetry.update();
 
@@ -187,7 +185,135 @@ public class AprilTagAutonomous extends LinearOpMode {
         visionPortal.close();
 
     }   // end method runOpMode()
+    //are any drive motors busy
+    private boolean anyBusy() {
+        if (
+            frontLeftMotor.isBusy() ||
+            frontRightMotor.isBusy() ||
+            backLeftMotor.isBusy() ||
+            backRightMotor.isBusy()
+            ) {
+                return true;
+            }
+        return false;
+    }
+    //Move inexorably towards goal by increments
+    private void moveToGoal() {
+        if (!anyBusy()) {
+            setDriveRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            //if x is not at goal
+            double diff = largeDiff(currentGoalPos[0][0], currentGoalPos[0][1]);
+            if (diff != 0) {
+                setDriveTicks((int)(diff * 45));
+                setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
+                currentGoalPos[0][0]+=diff;
+                setDrivePower(1);
+                return;
+            }
+            //if y is not at goal
+            diff = largeDiff(currentGoalPos[1][0], currentGoalPos[1][1]);
+            if (diff != 0) {
+                setDriveTicks((int)(diff * 45));
+                setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
+                currentGoalPos[1][0]+=diff;
+                setDrivePower(1);
+                return;
+            }
+        }
+    }
+    private double[][] changeTarget(double[][] positions, double x, double y, double z) {
+        positions[0][1] = x;
+        positions[1][1] = y;
+        positions[2][1] = z;
+        return retArr;
+    }
+    private double largeDiff(double n1, double n2) {
+        if (Math.abs(Math.abs(n1) - Math.abs(n2)) > 1) {
+            double diff = n1 - n2;
+            return diff / Math.abs(diff);
+        }
+        return 0;
+    }
+    private void setDriveTicks(int ticks){
+        frontLeftMotor.setTargetPosition(ticks);
+        backLeftMotor.setTargetPosition(ticks);
+        frontRightMotor.setTargetPosition(ticks);
+        backRightMotor.setTargetPosition(ticks);
+    }
+    private void setDrivePower(double x, double y, double rotation) {
+        x = Math.max(-1, Math.min(1, x));
+        y = Math.max(-1, Math.min(1, y));
+        rotation = Math.max(-1, Math.min(1, rotation));
+    
+        double frontLeftPower = y + x + rotation;
+        double backLeftPower = y - x + rotation;
+        double frontRightPower = y - x - rotation;
+        double backRightPower = y + x - rotation;
+        if (Math.abs(frontLeftPower) > 1 || Math.abs(backLeftPower) > 1 || Math.abs(frontRightPower) > 1 || Math.abs(backRightPower) > 1) {
+            double max = Math.max(Math.abs(frontLeftPower), Math.abs(backLeftPower));
+            max = Math.max(max, Math.abs(frontRightPower));
+            max = Math.max(max, Math.abs(backRightPower));
+    
+            frontLeftPower /= max;
+            backLeftPower /= max;
+            frontRightPower /= max;
+            backRightPower /= max;
+        }
+        frontLeftMotor.setPower(frontLeftPower);
+        backLeftMotor.setPower(backLeftPower);
+        frontRightMotor.setPower(frontRightPower);
+        backRightMotor.setPower(backRightPower);
+    }
+    private void setDriveRunModes(DcMotor.RunMode runMode){
+        frontLeftMotor.setMode(runMode);
+        backLeftMotor.setMode(runMode);
+        frontRightMotor.setMode(runMode);
+        backRightMotor.setMode(runMode);
+    }
+    private void setMotorRunModes(DcMotor.RunMode runMode){
+        frontLeftMotor.setMode(runMode);
+        backLeftMotor.setMode(runMode);
+        frontRightMotor.setMode(runMode);
+        backRightMotor.setMode(runMode);
+        SpecArmMotor.setMode(runMode);
+        SubArmMotor.setMode(runMode);
+    }
+    public void initializeHardware() {
+        //Motor Initialization
+        frontLeftMotor = hardwareMap.dcMotor.get("backRightMotor");
+        backLeftMotor = hardwareMap.dcMotor.get("frontRightMotor");
+        frontRightMotor = hardwareMap.dcMotor.get("backLeftMotor");
+        backRightMotor = hardwareMap.dcMotor.get("frontLeftMotor");
+        SpecArmMotor = hardwareMap.dcMotor.get("armMotor");
+        SubArmMotor = hardwareMap.dcMotor.get("armMotor2");
 
+        //Servo Initialization
+        specClaw = hardwareMap.servo.get("specimen claw");
+        subClaw = hardwareMap.servo.get("sample claw");
+        subRotation = hardwareMap.servo.get("sub rotation");
+
+        //Set Motor Directions
+        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        SpecArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        //Set Motor Modes
+        setMotorRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMotorRunModes(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //Set Zero Power to Brake
+        frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        SpecArmMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        SubArmMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //Ensure Servos are in Initial Position
+        specClaw.setPosition(SPEC_OPEN_POSITION);
+        subClaw.setPosition(1);
+        subRotation.setPosition(ROTATE_REST);
+    }
     /**
      * Initialize the AprilTag processor.
      */
@@ -263,6 +389,9 @@ public class AprilTagAutonomous extends LinearOpMode {
     private double[][] telemetryAprilTag(double[][] cope) {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
+        if (currentDetections.size == 0) {
+            return cope;
+        }
         double[][] retArr = new double[3][2];
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
@@ -293,114 +422,5 @@ public class AprilTagAutonomous extends LinearOpMode {
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
         return retArr;
     }   // end method telemetryAprilTag()
-    
-    //are any drive motors busy
-    private boolean anyBusy() {
-        if (
-            frontLeftMotor.isBusy() ||
-            frontRightMotor.isBusy() ||
-            backLeftMotor.isBusy() ||
-            backRightMotor.isBusy()
-            ) {
-                return true;
-            }
-        return false;
-    }
-    //Move inexorably towards goal by increments
-    private void moveToGoal() {
-        if (!anyBusy()) {
-            setDriveRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            int counter = 0;
-            for (double[] i : currentGoalPos) {
-                counter++;
-                telemetry.addData("Curent", i[0]);
-                telemetry.addData("Goal", i[1]);
-                if (largeDiff(i[0], i[1]) != 0) {
-                    setDriveTicks((int)(largeDiff(i[0], i[1]) * 100));
-                    setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
-                    setDrivePower(1);
-                    break;
-                }
-            }
-        }
-    }
-    private double[][] returnTarget(double[] targs, double[][] positions) {
-        double[][] retArr = new double[3][2];
-        int counter = 0;
-        for (double[] i : positions) {
-            retArr[counter] = new double[]{i[0], targs[counter]};
-            counter++;
-        }
-        return retArr;
-    }
-    private double largeDiff(double n1, double n2) {
-        if (Math.abs(Math.abs(n1) - Math.abs(n2)) > 1) {
-            double diff = n1 - n2;
-            return diff / Math.abs(diff);
-        }
-        return 0;
-    }
-    public void initializeHardware() {
-        //Motor Initialization
-        frontLeftMotor = hardwareMap.dcMotor.get("backRightMotor");
-        backLeftMotor = hardwareMap.dcMotor.get("frontRightMotor");
-        frontRightMotor = hardwareMap.dcMotor.get("backLeftMotor");
-        backRightMotor = hardwareMap.dcMotor.get("frontLeftMotor");
-        SpecArmMotor = hardwareMap.dcMotor.get("armMotor");
-        SubArmMotor = hardwareMap.dcMotor.get("armMotor2");
-
-        //Servo Initialization
-        specClaw = hardwareMap.servo.get("specimen claw");
-        subClaw = hardwareMap.servo.get("sample claw");
-        subRotation = hardwareMap.servo.get("sub rotation");
-
-        //Set Motor Directions
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        SpecArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        //Set Motor Modes
-        setMotorRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setMotorRunModes(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //Set Zero Power to Brake
-        frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        SpecArmMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        SubArmMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        //Ensure Servos are in Initial Position
-        specClaw.setPosition(SPEC_OPEN_POSITION);
-        subClaw.setPosition(1);
-        subRotation.setPosition(ROTATE_REST);
-    }
-    private void setDriveTicks(int ticks){
-        frontLeftMotor.setTargetPosition(ticks);
-        backLeftMotor.setTargetPosition(ticks);
-        frontRightMotor.setTargetPosition(ticks);
-        backRightMotor.setTargetPosition(ticks);
-    }
-    private void setDrivePower(double power){
-        frontLeftMotor.setPower(power);
-        backLeftMotor.setPower(power);
-        frontRightMotor.setPower(power);
-        backRightMotor.setPower(power);
-    }
-    private void setDriveRunModes(DcMotor.RunMode runMode){
-        frontLeftMotor.setMode(runMode);
-        backLeftMotor.setMode(runMode);
-        frontRightMotor.setMode(runMode);
-        backRightMotor.setMode(runMode);
-    }
-    private void setMotorRunModes(DcMotor.RunMode runMode){
-        frontLeftMotor.setMode(runMode);
-        backLeftMotor.setMode(runMode);
-        frontRightMotor.setMode(runMode);
-        backRightMotor.setMode(runMode);
-        SpecArmMotor.setMode(runMode);
-        SubArmMotor.setMode(runMode);
-    }
     // todo: write your code here
 }
