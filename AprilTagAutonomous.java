@@ -162,10 +162,18 @@ public class AprilTagAutonomous extends LinearOpMode {
         telemetry.update();
         waitForStart();
         
-        currentGoalPos = changeTarget( currentGoalPos, 21, -35, 0);
+
+        //change first num to number of steps
+        currentstep = 0;
+        double[][] positionOrder = new double[2][3];
+        positionOrder[0] = new double[] {21, -35, 0};
+        currentGoalPos = changeTarget(currentGoalPos, positionOrder[0]);
         while (opModeIsActive()) {
             currentGoalPos = telemetryAprilTag(currentGoalPos);
-            moveToGoal();
+            if(moveToGoal()) {
+                currentstep += 1;
+                changeTarget(currentGoalPos, positionOrder[currentstep]);
+            }
 
             // Push telemetry to the Driver Station.
             telemetry.update();
@@ -198,7 +206,7 @@ public class AprilTagAutonomous extends LinearOpMode {
         return false;
     }
     //Move inexorably towards goal by increments
-    private void moveToGoal() {
+    private boolean moveToGoal() {
         if (!anyBusy()) {
             setDriveRunModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             //if x is not at goal
@@ -208,7 +216,7 @@ public class AprilTagAutonomous extends LinearOpMode {
                 setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
                 currentGoalPos[0][0]+=diff;
                 setDrivePower(1);
-                return;
+                return false;
             }
             //if y is not at goal
             diff = largeDiff(currentGoalPos[1][0], currentGoalPos[1][1]);
@@ -217,14 +225,15 @@ public class AprilTagAutonomous extends LinearOpMode {
                 setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
                 currentGoalPos[1][0]+=diff;
                 setDrivePower(1);
-                return;
+                return false;
             }
+            return true;
         }
     }
-    private double[][] changeTarget(double[][] positions, double x, double y, double z) {
-        positions[0][1] = x;
-        positions[1][1] = y;
-        positions[2][1] = z;
+    private double[][] changeTarget(double[][] positions, double[] arr) {
+        positions[0][1] = arr[0];
+        positions[1][1] = arr[1];
+        positions[2][1] = arr[2];
         return retArr;
     }
     private double largeDiff(double n1, double n2) {
