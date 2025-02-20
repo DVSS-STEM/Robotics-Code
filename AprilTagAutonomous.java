@@ -164,10 +164,12 @@ public class AprilTagAutonomous extends LinearOpMode {
         
 
         //change first num to number of steps
-        currentstep = 0;
-        double[][] positionOrder = new double[2][3];
+        int currentstep = 0;
+        double[][] positionOrder = new double[3][3];
         positionOrder[0] = new double[] {21, -35, 0};
-        currentGoalPos = changeTarget(currentGoalPos, positionOrder[0]);
+        positionOrder[1] = new double[] {23, -40, 0};
+        positionOrder[2] = new double[] {47, -40, 0};
+        changeTarget(currentGoalPos, positionOrder[0]);
         while (opModeIsActive()) {
             currentGoalPos = telemetryAprilTag(currentGoalPos);
             if(moveToGoal()) {
@@ -215,7 +217,7 @@ public class AprilTagAutonomous extends LinearOpMode {
                 setDriveTicks((int)(diff * 45));
                 setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
                 currentGoalPos[0][0]+=diff;
-                setDrivePower(1);
+                setDrivePower(1,0,0);
                 return false;
             }
             //if y is not at goal
@@ -224,17 +226,19 @@ public class AprilTagAutonomous extends LinearOpMode {
                 setDriveTicks((int)(diff * 45));
                 setDriveRunModes(DcMotor.RunMode.RUN_TO_POSITION);
                 currentGoalPos[1][0]+=diff;
-                setDrivePower(1);
+                setDrivePower(0,1,0);
                 return false;
             }
             return true;
+        }else{
+            return false;
         }
     }
-    private double[][] changeTarget(double[][] positions, double[] arr) {
+    private static void changeTarget(double[][]positions, double[] arr) {
         positions[0][1] = arr[0];
         positions[1][1] = arr[1];
         positions[2][1] = arr[2];
-        return retArr;
+        //return retArr;
     }
     private double largeDiff(double n1, double n2) {
         if (Math.abs(Math.abs(n1) - Math.abs(n2)) > 1) {
@@ -398,7 +402,7 @@ public class AprilTagAutonomous extends LinearOpMode {
     private double[][] telemetryAprilTag(double[][] cope) {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
-        if (currentDetections.size == 0) {
+        if (currentDetections.size() == 0) {
             return cope;
         }
         double[][] retArr = new double[3][2];
