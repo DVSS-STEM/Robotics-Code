@@ -303,38 +303,36 @@ import java.util.List;
                     specClaw.setPosition(SPEC_OPEN_POSITION);
                 }
 
-                if (gamepad2.left_bumper && SpecArmMotor.getCurrentPosition()>-3500){
-                    SpecArmMotor.setTargetPosition(SpecArmMotor.getCurrentPosition()-50);
-                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    SpecArmMotor.setPower(1);
-                } else if (gamepad2.right_bumper && SpecArmMotor.getCurrentPosition()<-100){
-                    SpecArmMotor.setTargetPosition(SpecArmMotor.getCurrentPosition()+50);
-                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    SpecArmMotor.setPower(1);
-                } else if (gamepad2.start){
+                if (gamepad2.left_bumper && SpecArmMotor.getCurrentPosition() > -3500) {
+                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    SpecArmMotor.setPower(-0.3);
+                } else if (gamepad2.right_bumper && SpecArmMotor.getCurrentPosition() < -100) {
+                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    SpecArmMotor.setPower(0.3);
+                } else if (gamepad2.start) {
                     SpecArmMotor.setTargetPosition(-480);
                     SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     SpecArmMotor.setPower(1);
-                } else if (gamepad2.back){
+                } else if (gamepad2.back) {
                     SpecArmMotor.setTargetPosition(-2950);
                     SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     SpecArmMotor.setPower(1);
-                } else if (gamepad2.left_trigger>0.3 && SpecArmMotor.getCurrentPosition()>-3500){
-                    SpecArmMotor.setTargetPosition(SpecArmMotor.getCurrentPosition()-150);
-                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    SpecArmMotor.setPower(1);
-                } else if (gamepad2.right_trigger>0.3 && SpecArmMotor.getCurrentPosition()<-100){
-                    SpecArmMotor.setTargetPosition(SpecArmMotor.getCurrentPosition()+150);
-                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    SpecArmMotor.setPower(1);
-                } else if (gamepad2.left_stick_button){
+                } else if (gamepad2.left_trigger > 0.3 && SpecArmMotor.getCurrentPosition() > -3500) {
+                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    SpecArmMotor.setPower(-0.5 * gamepad2.left_trigger);
+                } else if (gamepad2.right_trigger > 0.3 && SpecArmMotor.getCurrentPosition() < -100) {
+                    SpecArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    SpecArmMotor.setPower(0.5 * gamepad2.right_trigger);
+                } else if (gamepad2.left_stick_button) {
                     SpecArmMotor.setTargetPosition(-3400);
                     SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     SpecArmMotor.setPower(1);
-                } else if (gamepad2.right_stick_button){
+                } else if (gamepad2.right_stick_button) {
                     SpecArmMotor.setTargetPosition(500);
                     SpecArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     SpecArmMotor.setPower(1);
+                } else if (!gamepad2.left_bumper && !gamepad2.right_bumper && gamepad2.left_trigger <= 0.3 && gamepad2.right_trigger <= 0.3) {
+                    SpecArmMotor.setPower(0);
                 }
                 
                 if (gamepad2.x){
