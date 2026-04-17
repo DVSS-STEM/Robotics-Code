@@ -125,17 +125,17 @@ public class BlueAutoFarBurlington extends LinearOpMode {
                 case 5:
                     if(startTime.seconds() >= 6){
                         rollServo.setPosition(0);
-                        intakeMotor.setVelocity(-2000); // this is some code to consider that outtakes to stop the balls from throwing off movement as much
+                        // intakeMotor.setVelocity(-2000); // this is some code to consider that outtakes to stop the balls from throwing off movement as much
                         Movement(0.6, 0, -68,0.8);
                         WaitForDrive();
-                        intakeMotor.setVelocity(1500); // this is some code to consider that outtakes to stop the balls from throwing off movement as much
+                        // intakeMotor.setVelocity(1500); // this is some code to consider that outtakes to stop the balls from throwing off movement as much
                         stage += 1;
                         startTime.reset();
                     }
                     break;
                 case 6:
                     if(startTime.seconds() >= 0){
-                        Movement(0.75, 0, 0,0.8); // forward to pick up pieces
+                        Movement(0.7, 0, 0,0.8); // forward to pick up pieces
                         WaitForDrive();
                         stage += 1;
                         startTime.reset();

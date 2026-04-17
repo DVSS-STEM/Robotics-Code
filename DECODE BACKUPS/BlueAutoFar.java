@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.*;
 
 @Autonomous
 
-public class BlueAutoFar extends LinearOpMode {
+public class BlueAutoFarComplex extends LinearOpMode {
     // Motor and servo declarations
     private DcMotor frontLeftMotor;
     private DcMotor backLeftMotor;
@@ -19,17 +19,10 @@ public class BlueAutoFar extends LinearOpMode {
     private DcMotor backRightMotor;
     
     // here marks the beginning of the new additions and their resulting errors. NOTE: you have to add these into both the brain's I/O and the initializeHardware method
-    private DcMotorEx intakeMotor;
+    private DcMotor intakeMotor;
     private DcMotorEx flyWheelMotor;
     private Servo hoodServo; // in case it isn't obvious this controls the "hood" that directs the balls out of the flywheels
     private Servo rollServo; // controls the rolling of the balls into the flywheel
-    
-    //pifd coof
-    
-    double a = 1400;
-    double b = 0;
-    double c = 0; // 0.05
-    double d = 600;
     
     //timer
     ElapsedTime startTime = new ElapsedTime();
@@ -86,16 +79,14 @@ public class BlueAutoFar extends LinearOpMode {
     public void runOpMode() {
         initializeHardware();
         
-        flyWheelMotor.setVelocityPIDFCoefficients(a, b, c, d);
-        
         waitForStart();
         
         while (opModeIsActive()) {
             // switch case so that timing works out. The delay on each step of the auto is the number in the conditional after it
             switch (stage) {
                 case 1:
-                    hoodServo.setPosition(44.773 * Math.PI / 180);
-                    flyWheelMotor.setVelocity(1650);
+                    hoodServo.setPosition(30 * Math.PI / 180); // CHANGE THIS CRAP
+                    flyWheelMotor.setVelocity(1100); // CHANGE THIS CRAP
                     stage += 1;
                     startTime.reset();
                     break;
@@ -106,19 +97,19 @@ public class BlueAutoFar extends LinearOpMode {
                         startTime.reset();                        
                     }
                     break;
-                case 3:
+                case 4:
                     if(startTime.seconds() >= 1) {
-                        intakeMotor.setPower(1); // starts intaking to shoot and waits 13 seconds for it to fully unload (in next conditional)
+                        intakeMotor.setPower(0.6); // starts intaking to shoot and waits 13 seconds for it to fully unload (in next conditional)
                         stage += 1;
                         startTime.reset();
                     }
                     break;
-                case 4:
+                case 5:
                     if(startTime.seconds() >= 6){
-                        intakeMotor.setVelocity(0);
+                        intakeMotor.setPower(0);
                         rollServo.setPosition(0);
                         flyWheelMotor.setVelocity(0); // might change to 1 for convinience
-                        Movement(0.5, 0, 0, 0.8); // leaves zone CHANGE THIS
+                        Movement(0.5, 0, 0,0.8); // leaves zone CHANGE THIS
                         WaitForDrive();
                         stage += 1;
                         startTime.reset();
@@ -135,7 +126,7 @@ public class BlueAutoFar extends LinearOpMode {
         backLeftMotor = hardwareMap.dcMotor.get("frontRightMotor"); // gang wtf
         frontRightMotor = hardwareMap.dcMotor.get("backLeftMotor"); // gang wtf
         backRightMotor = hardwareMap.dcMotor.get("frontLeftMotor"); // gang wtf
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
+        intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
         flyWheelMotor = hardwareMap.get(DcMotorEx.class, "flyWheelMotor"); // motors
         hoodServo = hardwareMap.servo.get("hoodServo");
         rollServo = hardwareMap.servo.get("rollServo");
@@ -144,10 +135,6 @@ public class BlueAutoFar extends LinearOpMode {
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         flyWheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        
-        // set intake to use encoder silly
-        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
         // set flywheel to use encoder so we can use ticks for more reliable shooting
         flyWheelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // this one resets the motor encoder as is best practice
